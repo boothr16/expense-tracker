@@ -15,6 +15,36 @@ const dummyTransactions = [
 
 let transactions = dummyTransactions;
 
+// Add transaction
+function addTransaction(e) {
+    e.preventDefault();
+
+    if (text.value.trim() === '' || amount.value.trim() === '') {
+        alert('Please add a text and amount');
+    }
+    else {
+        const transaction = {
+            id: generateID(),
+            text: text.value,
+            amount: +amount.value
+        };
+
+        transactions.push(transaction);
+
+        addTransactionDOM(transaction);
+
+        updateValues();
+
+        text.value = '';
+        amount.value = '';
+    }
+}
+
+// Generate random ID
+function generateID() {
+    return Math.floor(Math.random() * 100000000);
+}
+
 // Add transactions to DOM list
 function addTransactionDOM(transaction) {
     // Get sign
@@ -27,24 +57,28 @@ function addTransactionDOM(transaction) {
 
     item.innerHTML = `
         ${transaction.text} <span>${sign}${Math.abs(transaction.amount)}
-        </span> <button class="delete-btn">x</button>`;
+        </span> <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>`;
 
     list.appendChild(item);
 }
 
 // Update the balance, income, and expense
 function updateValues() {
+    // create new array just containing transaction amounts
     const amounts = transactions.map(transaction => 
         transaction.amount);
 
+        // for each item in amounts, add item to accumulator (starting at zero)
         const total = amounts.reduce((acc, item) => (acc += item), 0)
                         .toFixed(2);
 
+        // filter amounts to only include items greater than zero
         const income = amounts
                         .filter(item => item > 0)
                         .reduce((acc, item) => (acc += item), 0)
                         .toFixed(2);
         
+        // filter amounts to only include items less than zero
         const expense = (amounts
                         .filter(item => item < 0).
                         reduce((acc, item) => (acc += item), 0) * -1)
@@ -55,12 +89,23 @@ function updateValues() {
         money_minus.innerText = `$${expense}`;
 }
 
+// Remove transaction by ID
+function removeTransaction(id) {
+    transactions = transactions.filter(transaction => transaction.id
+        !== id);
+
+    init();
+}
+
 // Init app
 function init() {
     list.innerHTML = '';
 
+    // execute addTransactionDOM for each element in transactions array
     transactions.forEach(addTransactionDOM);
     updateValues();
 }
 
 init();
+
+form.addEventListener('submit', addTransaction);
